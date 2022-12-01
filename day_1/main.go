@@ -69,10 +69,6 @@ func getLargestSums(reader io.Reader, topN int) []int {
 						largestSums[j] = largestSums[j-1]
 					}
 
-					for j := len(largestSums) - 1; j > i; j-- {
-						largestSums[j] = largestSums[j-1]
-					}
-
 					largestSums[i] = sum
 					break
 				}
