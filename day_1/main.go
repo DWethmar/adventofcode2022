@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -25,13 +26,16 @@ func main() {
 	}
 	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
+	fmt.Println("largest sum : ", getLargestSum(file))
+}
 
-	var largestSum int
-	var sum int
+func getLargestSum(reader io.Reader) int {
+	scanner := bufio.NewScanner(reader)
+
+	var sum, largestSum int
 	counter := NewSummarizer(0)
 
-	for scanner.Scan() {
+	for hasScan := scanner.Scan(); hasScan; hasScan = scanner.Scan() {
 		line := strings.TrimSuffix(scanner.Text(), "\n")
 
 		if line == "" {
@@ -44,24 +48,16 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if i == 0 {
-			continue
-		}
-
 		if sum = counter(i); sum > largestSum {
 			largestSum = sum
 		}
 	}
 
-	if sum > largestSum {
-		largestSum = sum
-	}
-
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
-	} else {
-		fmt.Println("largest sum : ", largestSum)
 	}
+
+	return largestSum
 }
 
 func NewSummarizer(sum int) func(i int) int {
