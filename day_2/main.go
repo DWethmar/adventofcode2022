@@ -11,7 +11,7 @@ import (
 )
 
 func runningtime(s string) (string, time.Time) {
-	log.Println("Start:	", s)
+	log.Println("Start: ", s)
 	return s, time.Now()
 }
 
@@ -21,7 +21,7 @@ func track(s string, startTime time.Time) {
 }
 
 func main() {
-	defer track(runningtime("get largest sum"))
+	defer track(runningtime("ultra top secret strategy guide"))
 
 	var filePath string
 	if len(os.Args) < 1 {
@@ -49,9 +49,11 @@ func calculateScore(reader io.Reader) int {
 		line := strings.TrimSuffix(scanner.Text(), "\n")
 		lineParts := strings.Split(line, " ")
 
+		opponentMove := MapOpponentMove(lineParts[0])
+
 		r := Round{
-			OpponentMove: MapOpponentMove(lineParts[0]),
-			PlayerMove:   MapPlayerMove(lineParts[1]),
+			OpponentMove: opponentMove,
+			PlayerMove:   SelectPlayerMove(opponentMove, MapPlayerStrategy(lineParts[1])),
 		}
 
 		score += r.Score()

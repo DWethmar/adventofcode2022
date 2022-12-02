@@ -21,6 +21,61 @@ func MapOpponentMove(s string) OpponentMove {
 	}
 }
 
+//X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win. Good luck!"
+type PlayerStrategy string
+
+const (
+	PlayerStrategyLose PlayerStrategy = "X"
+	PlayerStrategyTie  PlayerStrategy = "Y"
+	PlayerStrategyWin  PlayerStrategy = "Z"
+)
+
+func MapPlayerStrategy(s string) PlayerStrategy {
+	switch s {
+	case "X":
+		return PlayerStrategyLose
+	case "Y":
+		return PlayerStrategyTie
+	case "Z":
+		return PlayerStrategyWin
+	default:
+		panic("invalid player move")
+	}
+}
+
+func SelectPlayerMove(opponentMove OpponentMove, strategy PlayerStrategy) PlayerMove {
+	switch opponentMove {
+	case OpponentMoveRock:
+		switch strategy {
+		case PlayerStrategyLose:
+			return PlayerMoveScissors
+		case PlayerStrategyTie:
+			return PlayerMoveRock
+		case PlayerStrategyWin:
+			return PlayerMovePaper
+		}
+	case OpponentMovePaper:
+		switch strategy {
+		case PlayerStrategyLose:
+			return PlayerMoveRock
+		case PlayerStrategyTie:
+			return PlayerMovePaper
+		case PlayerStrategyWin:
+			return PlayerMoveScissors
+		}
+	case OpponentMoveScissors:
+		switch strategy {
+		case PlayerStrategyLose:
+			return PlayerMovePaper
+		case PlayerStrategyTie:
+			return PlayerMoveScissors
+		case PlayerStrategyWin:
+			return PlayerMoveRock
+		}
+	}
+	panic("invalid round")
+}
+
 type PlayerMove string
 
 const (
@@ -28,19 +83,6 @@ const (
 	PlayerMovePaper    PlayerMove = "Y"
 	PlayerMoveScissors PlayerMove = "Z"
 )
-
-func MapPlayerMove(s string) PlayerMove {
-	switch s {
-	case "X":
-		return PlayerMoveRock
-	case "Y":
-		return PlayerMovePaper
-	case "Z":
-		return PlayerMoveScissors
-	default:
-		panic("invalid player move")
-	}
-}
 
 type Round struct {
 	OpponentMove OpponentMove
@@ -55,6 +97,7 @@ const (
 	RoundOutcomeOpponentWin
 )
 
+// X means you need to lose, Y means you need to end the round in a draw, and Z means you need to win
 func (r Round) Outcome() RoundOutcome {
 	switch r.OpponentMove {
 	case OpponentMoveRock:
