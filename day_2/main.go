@@ -47,16 +47,13 @@ func calculateScore(reader io.Reader) int {
 
 	for scanner.Scan() {
 		line := strings.TrimSuffix(scanner.Text(), "\n")
-		lineParts := strings.Split(line, " ")
 
-		opponentMove := MapOpponentMove(lineParts[0])
+		opponentMove := MapOpponentMove(string(line[0]))
 
-		r := Round{
+		score += Round{
 			OpponentMove: opponentMove,
-			PlayerMove:   SelectPlayerMove(opponentMove, MapPlayerStrategy(lineParts[1])),
-		}
-
-		score += r.Score()
+			PlayerMove:   SelectPlayerMove(opponentMove, MapPlayerStrategy(string(line[2]))),
+		}.Score()
 	}
 
 	if err := scanner.Err(); err != nil {

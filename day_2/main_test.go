@@ -20,7 +20,7 @@ func Test_calculateScore(t *testing.T) {
 			args: args{
 				reader: strings.NewReader(strings.Join([]string{"A Y", "B X", "C Z"}, "\n")),
 			},
-			want: 15,
+			want: 12,
 		},
 	}
 	for _, tt := range tests {
