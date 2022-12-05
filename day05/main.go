@@ -29,12 +29,22 @@ func main() {
 	}
 	defer file.Close()
 
-	p1, err := RearrangeCreates(file)
+	p1, err := RearrangeCreates(file, CrateMover9000)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("Part 1: %s\n", strings.Join(p1, ""))
+
+	fmt.Println()
+
+	file.Seek(0, io.SeekStart)
+	p2, err := RearrangeCreates(file, CrateMover9001)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("\nPart 2: %s\n", strings.Join(p2, ""))
 }
 
 
@@ -44,7 +54,13 @@ func ReverseSlice[T comparable](s []T) {
     })
 }
 
-func RearrangeCreates(in io.Reader) (topCrates []string, err error) {
+type CrateMover int
+const (
+	CrateMover9000 CrateMover = iota
+	CrateMover9001
+)
+
+func RearrangeCreates(in io.Reader, crateMover CrateMover) (topCrates []string, err error) {
 	var stackingCrates = true
 	var crateStack [][]string
 
@@ -82,7 +98,10 @@ func RearrangeCreates(in io.Reader) (topCrates []string, err error) {
 			fmt.Printf("n: %d, fromStack: %d, toStack: %d \n", n, fromStack, toStack)
 
 			crates := crateStack[fromStack][len(crateStack[fromStack])-n:]
-			ReverseSlice(crates)
+
+			if crateMover == CrateMover9000 {
+				ReverseSlice(crates)
+			}
 
 			// add crates to new stack
 			crateStack[toStack] = append(crateStack[toStack], crates...)
