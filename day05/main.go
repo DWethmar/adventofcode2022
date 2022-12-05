@@ -29,7 +29,7 @@ func main() {
 	}
 	defer file.Close()
 
-	p1, err := RearrangementCreates(file)
+	p1, err := RearrangeCreates(file)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func ReverseSlice[T comparable](s []T) {
     })
 }
 
-func RearrangementCreates(in io.Reader) (topCrates []string, err error) {
+func RearrangeCreates(in io.Reader) (topCrates []string, err error) {
 	var stackingCrates = true
 	var crateStack [][]string
 
