@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"regexp"
@@ -49,7 +50,7 @@ func MapSections(i []string) (x1, x2, y1, y2 int) {
 	return
 }
 
-func CountOverlappingSectionAssignment(input *os.File) (overlap int, err error) {
+func CountOverlappingSectionAssignment(input io.Reader) (overlap int, err error) {
 	err = IterateLines(input, func(s string) {
 		var x1, x2, y1, y2 int = MapSections(re.FindAllString(s, -1))
 		// check if A contains B
@@ -60,7 +61,7 @@ func CountOverlappingSectionAssignment(input *os.File) (overlap int, err error) 
 	return
 }
 
-func CountPartialOverlappingSectionAssignment(input *os.File) (overlap int, err error) {
+func CountPartialOverlappingSectionAssignment(input io.Reader) (overlap int, err error) {
 	err = IterateLines(input, func(s string) {
 		var x1, x2, y1, y2 int = MapSections(re.FindAllString(s, -1))
 		// for any overlap
