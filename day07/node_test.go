@@ -96,7 +96,6 @@ func TestNewNode(t *testing.T) {
 func TestNodeSize(t *testing.T) {
 	type args struct {
 		node *Node
-		sum  int
 	}
 	tests := []struct {
 		name string
@@ -106,53 +105,9 @@ func TestNodeSize(t *testing.T) {
 		{
 			name: "test",
 			args: args{
-				node: &Node{
-					Parent: nil,
-					Children: []*Node{
-						{
-							Parent:   nil,
-							Children: []*Node{},
-							Name:     "a",
-							Size:     1,
-						},
-						{
-							Parent: nil,
-							Children: []*Node{
-								{
-									Parent:   nil,
-									Children: []*Node{},
-									Name:     "b",
-									Size:     1,
-								},
-								{
-									Parent:   nil,
-									Children: []*Node{},
-									Name:     "c",
-									Size:     1,
-								},
-								{
-									Parent: nil,
-									Children: []*Node{
-										{
-											Parent:   nil,
-											Children: []*Node{},
-											Name:     "c",
-											Size:     1,
-										},
-									},
-									Name: "c",
-									Size: 0,
-								},
-							},
-							Name: "test",
-							Size: 0,
-						},
-					},
-					Name: "x",
-					Size: 0,
-				},
+				node: exampleTree,
 			},
-			want: 4,
+			want: 48381165,
 		},
 	}
 	for _, tt := range tests {
