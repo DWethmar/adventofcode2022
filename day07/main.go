@@ -15,21 +15,28 @@ var commandRegex = regexp.MustCompile(`^\$\s([a-z]+)(?:\s(\S+))?`)
 var listOutPutDirRegex = regexp.MustCompile(`^(^dir)\s(.+)$`)
 var listOutputFileRegex = regexp.MustCompile(`^(\d+)\s(.+)`)
 
+const (
+	totalSize  = 70000000
+	targetSize = 30000000
+)
+
 func main() {
 	rawBody, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
 		panic(err)
 	}
 
-	marker1, err := SumFileSize(ioutil.NopCloser(bytes.NewBuffer(rawBody)))
+	tree, err := CreateTree(ioutil.NopCloser(bytes.NewBuffer(rawBody)))
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("part 1: %d\n", marker1)
+	fmt.Printf("part 1: %d\n", SumNodesWithSizeLT(tree))
+	fmt.Println("----")
+	fmt.Printf("part 2: %d\n", SmallestFolderThatWouldFreeUpSpace(tree))
 }
 
-func SumFileSize(in io.Reader) (sum int, err error) {
+func CreateTree(in io.Reader) (node *Node, err error) {
 	cmd := ""
 	param := ""
 	isCmd := false
@@ -121,21 +128,15 @@ func SumFileSize(in io.Reader) (sum int, err error) {
 		return true
 	})
 
-	// PrintTree(root, 0)
-	// PrintList(root)
-
-	sum = SumFoldersOverN(root)
-
-	return
+	return root, err
 }
 
-func SumFoldersOverN(node *Node) int {
+func SumNodesWithSizeLT(node *Node) int {
 	var sum int
 
 	IterateNodes(node, func(node *Node) bool {
 		if node.Size == 0 {
 			if size := NodeSize(node); size < 100000 {
-				// fmt.Printf("node %s(%d) is smaller than 100000 %s \n", node.Name, NodeSize(node), NodePath(node))
 				sum += size
 			}
 		}
@@ -144,4 +145,29 @@ func SumFoldersOverN(node *Node) int {
 	})
 
 	return sum
+}
+
+// SmallestFolderThatWouldFreeUpSpace find a directory you can delete that will free up enough space
+func SmallestFolderThatWouldFreeUpSpace(node *Node) int {
+	smallestSize := 0
+
+	unusedSpace := totalSize - NodeSize(node)
+
+	IterateNodes(node, func(node *Node) bool {
+		if node.Size == 0 {
+			size := NodeSize(node)
+
+			fmt.Printf("node: %s (%d) \n", NodePath(node), size)
+
+			if unusedSpace+size >= targetSize {
+				if smallestSize == 0 || size < smallestSize {
+					smallestSize = size
+				}
+			}
+		}
+
+		return true
+	})
+
+	return smallestSize
 }
