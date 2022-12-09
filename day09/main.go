@@ -59,15 +59,7 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 
 			move := DrawGrid(head, tail, []*Point{})
 
-			// x := tail.X
-			// y := tail.Y
-
 			Follow(head, tail)
-
-			// if x != tail.X || y != tail.Y { // tail moved
-			// 	positionsVisited = append(positionsVisited, &Point{X: tail.X, Y: tail.Y})
-			// 	positionVisitedByTail++
-			// }
 
 			if _, ok := pointsVisited[tail.String()]; !ok {
 				pointsVisited[tail.String()] = struct{}{}
