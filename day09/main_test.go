@@ -64,6 +64,34 @@ func TestMoveRope(t *testing.T) {
 			wantErr:                          false,
 		},
 		// {
+		// 	name: "example",
+		// 	args: args{
+		// 		input: strings.NewReader(strings.Join([]string{
+		// 			"U 1",
+		// 			"R 1",
+		// 			"U 1",
+		// 			"R 1",
+		// 			"U 1",
+		// 			"R 3",
+		// 		}, "\n")),
+		// 		debug: true,
+		// 	},
+		// 	wantUniquePositionsVisitedByTail: 13,
+		// 	wantErr:                          false,
+		// },
+		// {
+		// 	name: "example",
+		// 	args: args{
+		// 		input: strings.NewReader(strings.Join([]string{
+		// 			"U 3",
+		// 			"R 2",
+		// 		}, "\n")),
+		// 		debug: true,
+		// 	},
+		// 	wantUniquePositionsVisitedByTail: 13,
+		// 	wantErr:                          false,
+		// },
+		// {
 		// 	name: "example2",
 		// 	args: args{
 		// 		input: strings.NewReader(testInput2),
@@ -120,7 +148,10 @@ func TestFollow(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotX, gotY := Follow(tt.args.point, tt.args.target)
+			Follow(tt.args.point, tt.args.target)
+			gotX := tt.args.point.X
+			gotY := tt.args.point.Y
+
 			if gotX != tt.wantX {
 				t.Errorf("Follow() gotX = %v, want %v", gotX, tt.wantX)
 			}

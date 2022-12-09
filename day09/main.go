@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -11,6 +12,10 @@ import (
 
 type Point struct {
 	X, Y int
+}
+
+func (c *Point) String() string {
+	return fmt.Sprintf("%d,%d", c.X, c.Y)
 }
 
 func main() {
@@ -27,6 +32,8 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 	tail := &Point{X: 0, Y: 0}
 
 	positionsVisited := []*Point{}
+
+	pointsVisited := map[string]struct{}{}
 
 	err = IterateLines(input, func(s string) Step {
 		direction := ""
@@ -52,13 +59,20 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 
 			move := DrawGrid(head, tail, []*Point{})
 
-			x, y := Follow(tail, head)
-			tail.X += x
-			tail.Y += y
+			// x := tail.X
+			// y := tail.Y
 
-			if x != 0 || y != 0 { // tail moved
+			Follow(head, tail)
+
+			// if x != tail.X || y != tail.Y { // tail moved
+			// 	positionsVisited = append(positionsVisited, &Point{X: tail.X, Y: tail.Y})
+			// 	positionVisitedByTail++
+			// }
+
+			if _, ok := pointsVisited[tail.String()]; !ok {
+				pointsVisited[tail.String()] = struct{}{}
 				positionsVisited = append(positionsVisited, &Point{X: tail.X, Y: tail.Y})
-				positionVisitedByTail++
+				positionVisitedByTail = len(positionsVisited)
 			}
 
 			if debug {
@@ -76,6 +90,42 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 	})
 
 	return
+}
+
+func Follow(head *Point, tail *Point) {
+	// If the head is right next to or directly on top of the tail then we do nothing
+	diffInX := math.Abs(float64(tail.X - head.X))
+	diffInY := math.Abs(float64(tail.Y - head.Y))
+
+	if diffInY <= 1 && diffInX <= 1 {
+		return
+	}
+
+	//fmt.Println(fmt.Sprintf("Tail moving (%s) to meet head (%s)", tail.String(), head.String()))
+	xDirection := 1
+	yDirection := 1
+
+	if head.Y < tail.Y {
+		yDirection = -1
+	}
+
+	if head.X < tail.X {
+		xDirection = -1
+	}
+
+	if head.X == tail.X {
+		tail.Y += 1 * yDirection
+		return
+	}
+
+	if head.Y == tail.Y {
+		tail.X += 1 * xDirection
+		return
+	}
+
+	// Diagonal
+	tail.X += 1 * xDirection
+	tail.Y += 1 * yDirection
 }
 
 func DrawGrid(head *Point, tail *Point, otherPoints []*Point) *strings.Builder {
@@ -113,34 +163,4 @@ func DrawGrid(head *Point, tail *Point, otherPoints []*Point) *strings.Builder {
 	}
 
 	return strBuilder
-}
-
-func Follow(point *Point, target *Point) (x, y int) {
-	// only follow if distance between two point is greater then 1
-	if point.X == target.X && point.Y == target.Y {
-		return 0, 0
-	}
-
-	// check if adjacent
-	for tx := -1; tx <= 1; tx++ {
-		for ty := -1; ty <= 1; ty++ {
-			if point.X+tx == target.X && point.Y+ty == target.Y {
-				return 0, 0
-			}
-		}
-	}
-
-	if point.X < target.X {
-		x = 1
-	} else if point.X > target.X {
-		x = -1
-	}
-
-	if point.Y < target.Y {
-		y = 1
-	} else if point.Y > target.Y {
-		y = -1
-	}
-
-	return
 }
