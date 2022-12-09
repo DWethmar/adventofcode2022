@@ -58,38 +58,38 @@ func TestMoveRope(t *testing.T) {
 			name: "example",
 			args: args{
 				input: strings.NewReader(testInput),
-				debug: false,
+				debug: true,
 			},
 			wantUniquePositionsVisitedByTail: 13,
 			wantErr:                          false,
 		},
-		{
-			name: "example2",
-			args: args{
-				input: strings.NewReader(testInput2),
-				debug: false,
-			},
-			wantUniquePositionsVisitedByTail: 3,
-			wantErr:                          false,
-		},
-		{
-			name: "example3",
-			args: args{
-				input: strings.NewReader(testInput3),
-				debug: false,
-			},
-			wantUniquePositionsVisitedByTail: 3,
-			wantErr:                          false,
-		},
-		{
-			name: "example4",
-			args: args{
-				input: strings.NewReader(strings.Join([]string{"U 1", "R 1", "U 1", "R 1", "U 1", "R 1"}, "\n")),
-				debug: true,
-			},
-			wantUniquePositionsVisitedByTail: 3,
-			wantErr:                          false,
-		},
+		// {
+		// 	name: "example2",
+		// 	args: args{
+		// 		input: strings.NewReader(testInput2),
+		// 		debug: false,
+		// 	},
+		// 	wantUniquePositionsVisitedByTail: 3,
+		// 	wantErr:                          false,
+		// },
+		// {
+		// 	name: "example3",
+		// 	args: args{
+		// 		input: strings.NewReader(testInput3),
+		// 		debug: false,
+		// 	},
+		// 	wantUniquePositionsVisitedByTail: 3,
+		// 	wantErr:                          false,
+		// },
+		// {
+		// 	name: "example4",
+		// 	args: args{
+		// 		input: strings.NewReader(strings.Join([]string{"U 1", "R 1", "U 1", "R 1", "U 1", "R 1"}, "\n")),
+		// 		debug: true,
+		// 	},
+		// 	wantUniquePositionsVisitedByTail: 3,
+		// 	wantErr:                          false,
+		// },
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

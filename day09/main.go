@@ -26,7 +26,6 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 	head := &Point{X: 0, Y: 0}
 	tail := &Point{X: 0, Y: 0}
 
-	// positionVisitedByTail++
 	positionsVisited := []*Point{}
 
 	err = IterateLines(input, func(s string) Step {
@@ -39,7 +38,6 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 		}
 
 		for i := 0; i < distance; i++ {
-			move := DrawGrid(head, tail, []*Point{})
 
 			switch direction {
 			case "U":
@@ -51,6 +49,8 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 			case "R":
 				head.X++
 			}
+
+			move := DrawGrid(head, tail, []*Point{})
 
 			x, y := Follow(tail, head)
 			tail.X += x
@@ -65,8 +65,8 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 				fmt.Printf("Head: %v, Tail: %v Direction: %s, Distance: %d/%d Positions: %d \n", head, tail, direction, i+1, distance, positionVisitedByTail)
 
 				fmt.Printf("%s", DrawLinesNextToEachOther(
-					"move:\n"+move.String(),
-					"follow:\n"+DrawGrid(head, tail, []*Point{}).String(),
+					"Head:\n"+move.String(),
+					"Tail:\n"+DrawGrid(head, tail, []*Point{}).String(),
 					"visited:\n"+DrawGrid(nil, nil, positionsVisited).String(),
 				))
 			}
