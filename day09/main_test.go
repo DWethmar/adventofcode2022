@@ -45,8 +45,9 @@ func Test_main(t *testing.T) {
 
 func TestMoveRope(t *testing.T) {
 	type args struct {
-		input io.Reader
-		debug bool
+		input    io.Reader
+		debug    bool
+		tailSize int
 	}
 	tests := []struct {
 		name                             string
@@ -57,8 +58,9 @@ func TestMoveRope(t *testing.T) {
 		{
 			name: "example",
 			args: args{
-				input: strings.NewReader(testInput),
-				debug: true,
+				input:    strings.NewReader(testInput),
+				debug:    true,
+				tailSize: 9,
 			},
 			wantUniquePositionsVisitedByTail: 13,
 			wantErr:                          false,
@@ -121,7 +123,7 @@ func TestMoveRope(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotUniquePositionsVisitedByTail, err := MoveRope(tt.args.input, tt.args.debug)
+			gotUniquePositionsVisitedByTail, err := MoveRope(tt.args.input, tt.args.debug, tt.args.tailSize)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("MoveRope() error = %v, wantErr %v", err, tt.wantErr)
 				return

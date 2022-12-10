@@ -1,14 +1,18 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"math"
 	"os"
 	"strconv"
 	"strings"
 )
+
+// 6181
 
 type Point struct {
 	X, Y int
@@ -19,19 +23,33 @@ func (c *Point) String() string {
 }
 
 func main() {
-	positionVisitedByTail, err := MoveRope(os.Stdin, (len(os.Args) >= 2 && os.Args[1] == "debug"))
+	rawBody, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+
+	positionVisitedByTail, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), (len(os.Args) >= 2 && os.Args[1] == "debug"), 1)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("Part 1: %d\n", positionVisitedByTail)
+
+	x, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), (len(os.Args) >= 2 && os.Args[1] == "debug"), 9)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Printf("Part 2: %d\n", x)
 }
 
-func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error) {
+func MoveRope(input io.Reader, debug bool, tailSize int) (positionVisitedByTail int, err error) {
 	head := &Point{X: 0, Y: 0}
-	tail := &Point{X: 0, Y: 0}
+	tail := []*Point{}
 
-	positionsVisited := []*Point{}
+	for i := 0; i < tailSize; i++ {
+		tail = append(tail, &Point{X: 0, Y: 0})
+	}
 
 	pointsVisited := map[string]struct{}{}
 
@@ -45,7 +63,6 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 		}
 
 		for i := 0; i < distance; i++ {
-
 			switch direction {
 			case "U":
 				head.Y++
@@ -57,24 +74,19 @@ func MoveRope(input io.Reader, debug bool) (positionVisitedByTail int, err error
 				head.X++
 			}
 
-			move := DrawGrid(head, tail, []*Point{})
-
-			Follow(head, tail)
-
-			if _, ok := pointsVisited[tail.String()]; !ok {
-				pointsVisited[tail.String()] = struct{}{}
-				positionsVisited = append(positionsVisited, &Point{X: tail.X, Y: tail.Y})
-				positionVisitedByTail = len(positionsVisited)
+			h := head
+			for i := 0; i < len(tail); i++ {
+				Follow(h, tail[i])
+				h = tail[i]
 			}
+
+			lastTail := tail[len(tail)-1]
+			pointsVisited[lastTail.String()] = struct{}{}
+			positionVisitedByTail = len(pointsVisited)
 
 			if debug {
 				fmt.Printf("Head: %v, Tail: %v Direction: %s, Distance: %d/%d Positions: %d \n", head, tail, direction, i+1, distance, positionVisitedByTail)
-
-				fmt.Printf("%s", DrawLinesNextToEachOther(
-					"Head:\n"+move.String(),
-					"Tail:\n"+DrawGrid(head, tail, []*Point{}).String(),
-					"visited:\n"+DrawGrid(nil, nil, positionsVisited).String(),
-				))
+				fmt.Printf("%s", DrawGrid(head, tail).String())
 			}
 		}
 
@@ -93,7 +105,6 @@ func Follow(head *Point, tail *Point) {
 		return
 	}
 
-	//fmt.Println(fmt.Sprintf("Tail moving (%s) to meet head (%s)", tail.String(), head.String()))
 	xDirection := 1
 	yDirection := 1
 
@@ -120,7 +131,7 @@ func Follow(head *Point, tail *Point) {
 	tail.Y += 1 * yDirection
 }
 
-func DrawGrid(head *Point, tail *Point, otherPoints []*Point) *strings.Builder {
+func DrawGrid(head *Point, otherPoints []*Point) *strings.Builder {
 	var strBuilder = &strings.Builder{}
 
 	const width = 6
@@ -131,15 +142,13 @@ func DrawGrid(head *Point, tail *Point, otherPoints []*Point) *strings.Builder {
 		for x := 0; x < width; x++ {
 			if head != nil && x == head.X && y == head.Y {
 				strBuilder.WriteString("H")
-			} else if tail != nil && x == tail.X && y == tail.Y {
-				strBuilder.WriteString("T")
 			} else if x == 0 && y == 0 {
 				strBuilder.WriteString("s")
 			} else {
 				match := false
-				for _, p := range otherPoints {
+				for i, p := range otherPoints {
 					if p.X == x && p.Y == y {
-						strBuilder.WriteString("#")
+						strBuilder.WriteString(fmt.Sprintf("%d", i+1))
 						match = true
 						break
 					}
