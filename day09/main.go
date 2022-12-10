@@ -28,14 +28,16 @@ func main() {
 		panic(err)
 	}
 
-	positionVisitedByTail, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), (len(os.Args) >= 2 && os.Args[1] == "debug"), 1)
+	debug := (len(os.Args) >= 2 && os.Args[1] == "debug")
+
+	positionVisitedByTail, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), debug, 1)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	fmt.Printf("Part 1: %d\n", positionVisitedByTail)
 
-	x, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), (len(os.Args) >= 2 && os.Args[1] == "debug"), 9)
+	x, err := MoveRope(ioutil.NopCloser(bytes.NewBuffer(rawBody)), debug, 9)
 	if err != nil {
 		log.Fatal(err)
 	}

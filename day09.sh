@@ -9,3 +9,4 @@ cat $CHALLENGE/input_test_01.txt | bin/$CHALLENGE debug
 
 echo "Solution"
 cat $CHALLENGE/input.txt | bin/$CHALLENGE
+
