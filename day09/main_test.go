@@ -15,21 +15,6 @@ D 1
 L 5
 R 2`
 
-const testInput2 = `U 1
-U 1
-U 1
-U 1`
-
-const testInput3 = `U 4`
-
-const testInput4 = `U 1
-R 1
-U 1
-R 1
-U 1
-R 1
-`
-
 func Test_main(t *testing.T) {
 	tests := []struct {
 		name string
@@ -60,7 +45,7 @@ func TestMoveRope(t *testing.T) {
 			args: args{
 				input:    strings.NewReader(testInput),
 				debug:    true,
-				tailSize: 9,
+				tailSize: 1,
 			},
 			wantUniquePositionsVisitedByTail: 13,
 			wantErr:                          false,

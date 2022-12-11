@@ -78,7 +78,7 @@ func ReadAndParse(in io.Reader) (signalStrengths int, err error) {
 			// every 20th, 60th, 100th, 140th, 180th, and 220th
 			if cycle == 20 || cycle == 60 || cycle == 100 || cycle == 140 || cycle == 180 || cycle == 220 {
 				signalStrengths += cycle * x
-				fmt.Printf(" [signalStrengths: %d * %d = %d]", cycle, x, cycle*x)
+				fmt.Printf(" [signalStrengths: %d * %d = %d sum: %d]", cycle, x, cycle*x, signalStrengths)
 			}
 
 			/// Sprite position is x
