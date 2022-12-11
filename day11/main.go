@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"math"
 	"os"
 	"sort"
 	"strings"
@@ -20,13 +19,28 @@ func main() {
 		panic(err)
 	}
 
-	monkeys, err := CreateMonkeys(io.NopCloser(bytes.NewBuffer(rawBody)))
+	monkeys, _, err := CreateMonkeys(io.NopCloser(bytes.NewBuffer(rawBody)))
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	part1(monkeys)
+
+	monkeys, lcm, err := CreateMonkeys(io.NopCloser(bytes.NewBuffer(rawBody)))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	part2(monkeys, lcm)
+}
+
+func part1(monkeys []*Monkey) {
+	relieve := func(w int) int {
+		return w / 3
+	}
+
 	for i := 0; i < 20; i++ {
-		PlayKeepAway(i+1, monkeys)
+		PlayKeepAway(monkeys, relieve)
 	}
 
 	fmt.Println()
@@ -45,11 +59,43 @@ func main() {
 	fmt.Printf("Part 1: %s(%d) * %s(%d) = %d\n", monkeys[0].Name, monkeys[0].Inspected(), monkeys[1].Name, monkeys[1].Inspected(), answer)
 }
 
-func CreateMonkeys(input io.Reader) ([]*Monkey, error) {
+func part2(monkeys []*Monkey, lcm int) {
+	relieve := func(worryLvl int) int {
+		return worryLvl % lcm
+	}
+
+	for i := 0; i < 10000; i++ {
+		PlayKeepAway(monkeys, relieve)
+
+		if i == 0 {
+			fmt.Printf("After %d rounds:\n", i)
+			for _, monkey := range monkeys {
+				fmt.Printf("%s inspected items %d times.\n", monkey.Name, monkey.Inspected())
+			}
+			fmt.Println()
+		}
+	}
+
+	for _, monkey := range monkeys {
+		fmt.Printf("%s inspected items %d times.\n", monkey.Name, monkey.Inspected())
+	}
+
+	// sort monkeys based on Inspected()
+	sort.Slice(monkeys, func(i, j int) bool {
+		return monkeys[i].Inspected() > monkeys[j].Inspected()
+	})
+
+	answer := monkeys[0].Inspected() * monkeys[1].Inspected()
+
+	fmt.Printf("Part 2: %s(%d) * %s(%d) = %d\n", monkeys[0].Name, monkeys[0].Inspected(), monkeys[1].Name, monkeys[1].Inspected(), answer)
+}
+
+func CreateMonkeys(input io.Reader) ([]*Monkey, int, error) {
 	var monkeys []*Monkey
 
 	currentMonkey := &Monkey{}
 	i := 0
+	lcm := 1
 
 	err := iterate.Lines(input, func(instruction string) iterate.Step {
 		if instruction == "" {
@@ -65,15 +111,16 @@ func CreateMonkeys(input io.Reader) ([]*Monkey, error) {
 
 			currentMonkey.Name = strings.Trim(v[0], " ")
 		case 1:
-			currentMonkey.StartingItems = number.GetAllIntsFromString(v[1])
+			currentMonkey.Items = number.GetAllIntsFromString(v[1])
 		case 2:
 			currentMonkey.Operation = strings.Trim(v[1], " ")
 		case 3:
-			currentMonkey.Test = strings.Trim(v[1], " ")
+			currentMonkey.Test = number.GetAllIntsFromString(instruction)[0]
+			lcm *= currentMonkey.Test
 		case 4:
-			currentMonkey.TestTrue = strings.Trim(v[1], " ")
+			currentMonkey.TestTrue = number.GetAllIntsFromString(instruction)[0]
 		case 5:
-			currentMonkey.TestFalse = strings.Trim(v[1], " ")
+			currentMonkey.TestFalse = number.GetAllIntsFromString(instruction)[0]
 		}
 
 		if i == 5 {
@@ -85,7 +132,7 @@ func CreateMonkeys(input io.Reader) ([]*Monkey, error) {
 		return iterate.Continue
 	})
 
-	return monkeys, err
+	return monkeys, lcm, err
 }
 
 /**
@@ -101,39 +148,18 @@ Monkey 0:
     Current worry level is not divisible by 23.
     Item with worry level 620 is thrown to monkey 3.
 **/
-func PlayKeepAway(round int, monkeys []*Monkey) {
-
+func PlayKeepAway(monkeys []*Monkey, relieve func(w int) int) {
 	for _, monkey := range monkeys {
-		fmt.Print(monkey.Name, ":\n")
+		for i, _ := range monkey.Items {
+			w := relieve(monkey.DoOperation(i))
+			t := monkey.DoTest(w)
 
-		for i, item := range monkey.StartingItems {
-			fmt.Printf("\tMonkey inspects an item with a worry level of %d.\n", item)
-
-			d, newWorryLevel := monkey.DoOperation(i)
-			fmt.Printf("\t\t%s\n", d)
-
-			newWorryLevel = int(math.Floor(float64(newWorryLevel) / 3))
-			fmt.Printf("\t\tMonkey gets bored with item. Worry level is divided by 3 to %d.\n", newWorryLevel)
-
-			t, throwToMonkeyIndex := monkey.DoTest(newWorryLevel)
-			fmt.Printf("\t\t%s\n", t)
-
-			fmt.Printf("\t\tItem with worry level %d is thrown to monkey %d.\n", newWorryLevel, throwToMonkeyIndex)
-			receivingMonkey := monkeys[throwToMonkeyIndex]
-			receivingMonkey.StartingItems = append(receivingMonkey.StartingItems, newWorryLevel)
+			receivingMonkey := monkeys[t]
+			receivingMonkey.Items = append(receivingMonkey.Items, w)
 
 			monkey.Inspect()
 		}
 
-		monkey.StartingItems = []int{}
+		monkey.Items = nil
 	}
-
-	fmt.Println("")
-
-	fmt.Printf("After round %d, the monkeys are holding items with these worry levels:\n", round)
-	for _, monkey := range monkeys {
-		fmt.Printf("%s: %d\n", monkey.Name, monkey.StartingItems)
-	}
-
-	return
 }

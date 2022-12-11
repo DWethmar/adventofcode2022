@@ -2,6 +2,7 @@ package main
 
 import (
 	"io"
+	"math"
 	"os"
 	"reflect"
 	"testing"
@@ -10,35 +11,35 @@ import (
 var testMonkeys = []*Monkey{
 	{
 		Name:          "Monkey 0",
-		StartingItems: []int{79, 98},
+		Items: []int{79, 98},
 		Operation:     "new = old * 19",
-		Test:          "divisible by 23",
-		TestTrue:      "throw to monkey 2",
-		TestFalse:     "throw to monkey 3",
+		Test:          23,
+		TestTrue:      2,
+		TestFalse:     3,
 	},
 	{
 		Name:          "Monkey 1",
-		StartingItems: []int{54, 65, 75, 74},
+		Items: []int{54, 65, 75, 74},
 		Operation:     "new = old + 6",
-		Test:          "divisible by 19",
-		TestTrue:      "throw to monkey 2",
-		TestFalse:     "throw to monkey 0",
+		Test:          19,
+		TestTrue:      2,
+		TestFalse:     0,
 	},
 	{
 		Name:          "Monkey 2",
-		StartingItems: []int{79, 60, 97},
+		Items: []int{79, 60, 97},
 		Operation:     "new = old * old",
-		Test:          "divisible by 13",
-		TestTrue:      "throw to monkey 1",
-		TestFalse:     "throw to monkey 3",
+		Test:          12,
+		TestTrue:      1,
+		TestFalse:     3,
 	},
 	{
 		Name:          "Monkey 3",
-		StartingItems: []int{74},
+		Items: []int{74},
 		Operation:     "new = old + 3",
-		Test:          "divisible by 17",
-		TestTrue:      "throw to monkey 0",
-		TestFalse:     "throw to monkey 1",
+		Test:          17,
+		TestTrue:      0,
+		TestFalse:     1,
 	},
 }
 
@@ -83,7 +84,7 @@ func TestCreateMonkeys(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := CreateMonkeys(tt.args.input)
+			got, _, err := CreateMonkeys(tt.args.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateMonkeys() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -116,7 +117,48 @@ func TestPlayKeepAway(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			PlayKeepAway(1, tt.args.monkeys)
+			PlayKeepAway(tt.args.monkeys, func(worryLvl int) int {
+				return int(math.Floor(float64(worryLvl) / 3))
+			})
+		})
+	}
+}
+
+func Test_part1(t *testing.T) {
+	type args struct {
+		monkeys []*Monkey
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			part1(tt.args.monkeys)
+		})
+	}
+}
+
+func Test_part2(t *testing.T) {
+	type args struct {
+		monkeys []*Monkey
+	}
+	tests := []struct {
+		name string
+		args args
+	}{
+		{
+			name: "example",
+			args: args{
+				monkeys: testMonkeys,
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			part2(tt.args.monkeys, 10)
 		})
 	}
 }
