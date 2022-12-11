@@ -1,14 +1,22 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/dwethmar/adventofcode2022/pkg/iterate"
 )
 
 func main() {
-	x, err := ReadAndParse(os.Stdin)
+	rawBody, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		panic(err)
+	}
+
+	x, err := ReadAndParse(io.NopCloser(bytes.NewBuffer(rawBody)))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -17,8 +25,8 @@ func main() {
 }
 
 func ReadAndParse(in io.Reader) (x int, err error) {
-	err = IterateLines(in, func(s string) Step {
-		return Continue
+	err = iterate.Lines(in, func(s string) iterate.Step {
+		return iterate.Continue
 	})
 
 	return
