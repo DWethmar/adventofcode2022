@@ -19,42 +19,63 @@ type Point struct {
 
 func (p Point) String() string { return fmt.Sprintf("(%d, %d)", p.X, p.Y) }
 
-func (p Point) Distance(p2 *Point) int {
-	return int(math.Abs(float64(p.X-p2.X)) + math.Abs(float64(p.Y-p2.Y)))
-}
-
 func main() {
 	grid, err := CreateGrid(os.Stdin)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	length := GetPathToSignal(grid)
+	graph := MakeGraph(grid)
+
+	// part1(grid, graph)
+	part2(grid, graph)
+}
+
+func part1(grid Grid, graph *dijkstra.Graph) {
+	points := FindPoints(grid, 'S', 'E')
+	if len(points) != 2 {
+		log.Fatal("Could not find start points")
+	}
+
+	length, _ := GetPathToSignal(graph, points[0], points[1])
 
 	fmt.Printf("Part 1: %d\n", length)
 }
 
-func GetPathToSignal(grid Grid) int {
-
-	p := FindPoints(grid, 'S', 'E')
-	if len(p) != 2 {
-		log.Fatal("Could not find start and end point")
+func part2(grid Grid, graph *dijkstra.Graph) {
+	startPoints := FindPoints(grid, 'S', 'a')
+	if len(startPoints) < 1 {
+		log.Fatal("Could not find start points")
 	}
 
-	start := p[0]
-	end := p[1]
+	fmt.Printf("Start points: %v \n", len(startPoints))
 
-	PrintGrid(grid, start, end)
+	endPoints := FindPoints(grid, 'E')
+	if len(endPoints) != 1 {
+		log.Fatal("Could not find end points")
+	}
 
+	PrintGrid(grid, append(startPoints, endPoints[0])...)
+
+	var length = math.MaxInt32
+
+	for _, start := range startPoints {
+		l, path := GetPathToSignal(graph, start, endPoints[0])
+
+		if len(path) > 0 && l < length {
+			length = l
+		}
+	}
+
+	fmt.Printf("Part 2: %d\n", length)
+}
+
+func MakeGraph(grid Grid) *dijkstra.Graph {
 	graph := dijkstra.NewGraph()
-
-	gridMap := make(map[string]*Point)
 
 	grid.Iterate(func(x, y int, r rune) iterate.Step {
 		c := &Point{x, y}
 		height := GetHeight(grid, c)
-
-		gridMap[c.String()] = c
 
 		// Add edges
 		for _, p := range GetNeighbors(grid, c) {
@@ -73,18 +94,11 @@ func GetPathToSignal(grid Grid) int {
 		return iterate.Continue
 	})
 
-	length, path := graph.Path(start.String(), end.String())
+	return graph
+}
 
-	shortestPath := []*Point{}
-	for _, p := range path {
-		shortestPath = append(shortestPath, gridMap[p])
-	}
-
-	fmt.Printf("Path: %v\n", path)
-
-	PrintGrid(grid, shortestPath...)
-
-	return length
+func GetPathToSignal(graph *dijkstra.Graph, start *Point, end *Point) (int, []string) {
+	return graph.Path(start.String(), end.String())
 }
 
 func GetHeight(grid Grid, p *Point) int {

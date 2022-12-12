@@ -10,36 +10,36 @@ import (
 
 var testMonkeys = []*Monkey{
 	{
-		Name:          "Monkey 0",
-		Items: []int{79, 98},
-		Operation:     "new = old * 19",
-		Test:          23,
-		TestTrue:      2,
-		TestFalse:     3,
+		Name:      "Monkey 0",
+		Items:     []int{79, 98},
+		Operation: "new = old * 19",
+		Test:      23,
+		TestTrue:  2,
+		TestFalse: 3,
 	},
 	{
-		Name:          "Monkey 1",
-		Items: []int{54, 65, 75, 74},
-		Operation:     "new = old + 6",
-		Test:          19,
-		TestTrue:      2,
-		TestFalse:     0,
+		Name:      "Monkey 1",
+		Items:     []int{54, 65, 75, 74},
+		Operation: "new = old + 6",
+		Test:      19,
+		TestTrue:  2,
+		TestFalse: 0,
 	},
 	{
-		Name:          "Monkey 2",
-		Items: []int{79, 60, 97},
-		Operation:     "new = old * old",
-		Test:          12,
-		TestTrue:      1,
-		TestFalse:     3,
+		Name:      "Monkey 2",
+		Items:     []int{79, 60, 97},
+		Operation: "new = old * old",
+		Test:      13,
+		TestTrue:  1,
+		TestFalse: 3,
 	},
 	{
-		Name:          "Monkey 3",
-		Items: []int{74},
-		Operation:     "new = old + 3",
-		Test:          17,
-		TestTrue:      0,
-		TestFalse:     1,
+		Name:      "Monkey 3",
+		Items:     []int{74},
+		Operation: "new = old + 3",
+		Test:      17,
+		TestTrue:  0,
+		TestFalse: 1,
 	},
 }
 
@@ -107,14 +107,7 @@ func TestPlayKeepAway(t *testing.T) {
 		name string
 		args args
 		want int
-	}{
-		{
-			name: "example",
-			args: args{
-				monkeys: testMonkeys,
-			},
-		},
-	}
+	}{}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			PlayKeepAway(tt.args.monkeys, func(worryLvl int) int {
