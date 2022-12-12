@@ -9,6 +9,7 @@ import (
 
 	"github.com/dwethmar/adventofcode2022/day12/dijkstra"
 	"github.com/dwethmar/adventofcode2022/pkg/iterate"
+	"github.com/dwethmar/adventofcode2022/pkg/number"
 )
 
 const Alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -27,7 +28,7 @@ func main() {
 
 	graph := MakeGraph(grid)
 
-	// part1(grid, graph)
+	part1(grid, graph)
 	part2(grid, graph)
 }
 
@@ -58,14 +59,28 @@ func part2(grid Grid, graph *dijkstra.Graph) {
 	PrintGrid(grid, append(startPoints, endPoints[0])...)
 
 	var length = math.MaxInt32
+	var path []string
 
 	for _, start := range startPoints {
-		l, path := GetPathToSignal(graph, start, endPoints[0])
+		l, p := GetPathToSignal(graph, start, endPoints[0])
 
-		if len(path) > 0 && l < length {
+		if len(p) > 0 && l < length {
 			length = l
+			path = p
 		}
 	}
+
+	points := make([]*Point, 0)
+
+	for _, p := range path {
+		c := number.GetAllIntsFromString(p)
+		points = append(points, &Point{
+			X: c[0],
+			Y: c[1],
+		})
+	}
+
+	PrintGrid(grid, points...)
 
 	fmt.Printf("Part 2: %d\n", length)
 }
