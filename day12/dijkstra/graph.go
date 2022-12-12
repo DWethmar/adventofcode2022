@@ -15,7 +15,6 @@ func NewGraph() *Graph {
 
 func (g *Graph) AddEdge(origin, destiny string, weight int) {
 	g.nodes[origin] = append(g.nodes[origin], edge{node: destiny, weight: weight})
-	// g.nodes[destiny] = append(g.nodes[destiny], edge{node: origin, weight: weight})
 }
 
 func (g *Graph) edges(node string) []edge {

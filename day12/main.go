@@ -48,9 +48,13 @@ func GetPathToSignal(grid Grid) int {
 
 	graph := dijkstra.NewGraph()
 
+	gridMap := make(map[string]*Point)
+
 	grid.Iterate(func(x, y int, r rune) iterate.Step {
 		c := &Point{x, y}
 		height := GetHeight(grid, c)
+
+		gridMap[c.String()] = c
 
 		// Add edges
 		for _, p := range GetNeighbors(grid, c) {
@@ -71,7 +75,14 @@ func GetPathToSignal(grid Grid) int {
 
 	length, path := graph.Path(start.String(), end.String())
 
+	shortestPath := []*Point{}
+	for _, p := range path {
+		shortestPath = append(shortestPath, gridMap[p])
+	}
+
 	fmt.Printf("Path: %v\n", path)
+
+	PrintGrid(grid, shortestPath...)
 
 	return length
 }
