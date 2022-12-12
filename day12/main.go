@@ -5,9 +5,10 @@ import (
 	"log"
 	"math"
 	"os"
-	"sort"
 	"strings"
-	"sync"
+
+	"github.com/dwethmar/adventofcode2022/day12/dijkstra"
+	"github.com/dwethmar/adventofcode2022/pkg/iterate"
 )
 
 const Alphabet = "abcdefghijklmnopqrstuvwxyz"
@@ -36,12 +37,43 @@ func main() {
 func GetPathToSignal(grid Grid) (path []*Point) {
 	PrintGrid(grid)
 
-	p := FindPoints(grid, 'S', 'E')
-	if len(p) != 2 {
-		log.Fatal("Could not find start and end point")
-	}
+	graph := dijkstra.NewGraph()
 
-	return Walk(grid, p[0], p[1], []string{p[0].String()})
+	cells := []string{}
+	grid.Iterate(func(x, y int, r rune) iterate.Step {
+		p := &Point{x, y}
+		cells = append(cells, p.String())
+
+		return iterate.Continue
+	})
+
+	nodes := dijkstra.AddNodes(graph, cells...)
+
+	grid.Iterate(func(x, y int, r rune) iterate.Step {
+		c := &Point{x, y}
+		height := GetHeight(grid, c)
+
+		// Add edges
+		for _, p := range GetNeighbors(grid, c) {
+			// in bounds
+			if p.X < 0 || p.Y < 0 || p.X >= len(grid[0]) || p.Y >= len(grid) {
+				continue
+			}
+
+			// the elevation of the destination square can be at most one higher than the elevation of your current square
+			if GetHeight(grid, p) > height+1 {
+				continue
+			}
+
+			graph.AddEdge(nodes[c.String()], nodes[p.String()], 1)
+		}
+
+		return iterate.Continue
+	})
+
+	dijkstra.Dijkstra(graph, nodes["(0, 0)"])
+
+	return
 }
 
 func GetHeight(grid Grid, p *Point) int {
@@ -55,94 +87,11 @@ func GetHeight(grid Grid, p *Point) int {
 	return strings.IndexRune(Alphabet, r)
 }
 
-func Walk(grid Grid, start *Point, end *Point, walked []string) []*Point {
-	path := []*Point{
-		start,
+func GetNeighbors(grid Grid, p *Point) (neighbors []*Point) {
+	return []*Point{
+		{p.X - 1, p.Y},
+		{p.X + 1, p.Y},
+		{p.X, p.Y - 1},
+		{p.X, p.Y + 1},
 	}
-
-	currentHeight := GetHeight(grid, start)
-
-	neighbors := []*Point{
-		// up
-		{start.X, start.Y - 1},
-		// down
-		{start.X, start.Y + 1},
-		// left
-		{start.X - 1, start.Y},
-		// right
-		{start.X + 1, start.Y},
-	}
-
-	// sort neighbors by distance to end
-	sort.Slice(neighbors, func(i, j int) bool {
-		return neighbors[i].Distance(end) < neighbors[j].Distance(end)
-	})
-
-	directions := map[string][]*Point{}
-
-	wg := sync.WaitGroup{}
-
-	for _, n := range neighbors {
-		// Check if we are out of bounds
-		if n.X < 0 || n.Y < 0 || n.X >= len(grid[0]) || n.Y >= len(grid) {
-			continue
-		}
-
-		// Check if we have already walked this path
-		if contains(walked, n.String()) {
-			continue
-		}
-
-		height := GetHeight(grid, n)
-
-		// Check if we can walk to this point
-		if math.Abs(float64(currentHeight-height)) > 1 {
-			continue
-		}
-
-		walked = append(walked, n.String())
-
-		newWalked := make([]string, len(walked))
-		copy(newWalked, walked)
-
-		wg.Add(1)
-
-		go func(p Point) {
-			// Walk to the next point
-			directions[p.String()] = Walk(grid, &p, end, newWalked)
-
-			defer wg.Done()
-		}(*n)
-	}
-
-	wg.Wait()
-
-	shortest := 0
-	shortestPath := ""
-
-	// Find the shortest path
-	for n, p := range directions {
-		// Check if the path is empty
-		if len(p) == 0 {
-			continue
-		}
-
-		// has reached end?
-		if p[len(p)-1].String() != end.String() {
-			continue
-		}
-
-		// Check if this is the shortest path
-		if shortest == 0 || len(p) < shortest {
-			shortest = len(p)
-			shortestPath = n
-		}
-	}
-
-	// Add the shortest path to the path
-	if shortestPath != "" {
-		path = append(path, directions[shortestPath]...)
-	}
-
-	return path
 }

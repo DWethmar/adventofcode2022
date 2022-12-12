@@ -12,6 +12,16 @@ func (g Grid) Get(x, y int) rune {
 	return g[y][x]
 }
 
+func (g Grid) Iterate(f func(x, y int, r rune) iterate.Step) {
+	for y, row := range g {
+		for x, r := range row {
+			if f(x, y, r) == iterate.Break {
+				return
+			}
+		}
+	}
+}
+
 func CreateGrid(in io.Reader) (grid Grid, err error) {
 	i := 0
 	err = iterate.Lines(in, func(s string) iterate.Step {
