@@ -29,25 +29,24 @@ func main() {
 		log.Fatal(err)
 	}
 
-	path := GetPathToSignal(grid)
+	length := GetPathToSignal(grid)
 
-	fmt.Printf("Part 1: %d: %+v\n", len(path)-1, path)
+	fmt.Printf("Part 1: %d\n", length)
 }
 
-func GetPathToSignal(grid Grid) (path []*Point) {
-	PrintGrid(grid)
+func GetPathToSignal(grid Grid) int {
+
+	p := FindPoints(grid, 'S', 'E')
+	if len(p) != 2 {
+		log.Fatal("Could not find start and end point")
+	}
+
+	start := p[0]
+	end := p[1]
+
+	PrintGrid(grid, start, end)
 
 	graph := dijkstra.NewGraph()
-
-	cells := []string{}
-	grid.Iterate(func(x, y int, r rune) iterate.Step {
-		p := &Point{x, y}
-		cells = append(cells, p.String())
-
-		return iterate.Continue
-	})
-
-	nodes := dijkstra.AddNodes(graph, cells...)
 
 	grid.Iterate(func(x, y int, r rune) iterate.Step {
 		c := &Point{x, y}
@@ -55,25 +54,26 @@ func GetPathToSignal(grid Grid) (path []*Point) {
 
 		// Add edges
 		for _, p := range GetNeighbors(grid, c) {
-			// in bounds
-			if p.X < 0 || p.Y < 0 || p.X >= len(grid[0]) || p.Y >= len(grid) {
+			if p.X < 0 || p.Y < 0 || p.X >= len(grid[0]) || p.Y >= len(grid) { // out of bounds
 				continue
 			}
 
 			// the elevation of the destination square can be at most one higher than the elevation of your current square
-			if GetHeight(grid, p) > height+1 {
+			if h := GetHeight(grid, p); h > height+1 {
 				continue
 			}
 
-			graph.AddEdge(nodes[c.String()], nodes[p.String()], 1)
+			graph.AddEdge(c.String(), p.String(), 1)
 		}
 
 		return iterate.Continue
 	})
 
-	dijkstra.Dijkstra(graph, nodes["(0, 0)"])
+	length, path := graph.Path(start.String(), end.String())
 
-	return
+	fmt.Printf("Path: %v\n", path)
+
+	return length
 }
 
 func GetHeight(grid Grid, p *Point) int {

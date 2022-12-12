@@ -1,68 +1,43 @@
 package dijkstra
 
-import "sync"
+import hp "container/heap"
 
-type Heap struct {
-	elements []*Node
-	mutex    sync.RWMutex
+type path struct {
+	value int
+	nodes []string
 }
 
-func (h *Heap) Size() int {
-	h.mutex.RLock()
-	defer h.mutex.RUnlock()
-	return len(h.elements)
+type minPath []path
+
+func (h minPath) Len() int           { return len(h) }
+func (h minPath) Less(i, j int) bool { return h[i].value < h[j].value }
+func (h minPath) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *minPath) Push(x interface{}) {
+	*h = append(*h, x.(path))
 }
 
-// push an element to the heap, re-arrange the heap
-func (h *Heap) Push(element *Node) {
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
-	h.elements = append(h.elements, element)
-	i := len(h.elements) - 1
-	for ; h.elements[i].value < h.elements[parent(i)].value; i = parent(i) {
-		h.swap(i, parent(i))
-	}
+func (h *minPath) Pop() interface{} {
+	old := *h
+	n := len(old)
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
-// pop the top of the heap, which is the min value
-func (h *Heap) Pop() (i *Node) {
-	h.mutex.Lock()
-	defer h.mutex.Unlock()
-	i = h.elements[0]
-	h.elements[0] = h.elements[len(h.elements)-1]
-	h.elements = h.elements[:len(h.elements)-1]
-	h.rearrange(0)
-	return
+type heap struct {
+	values *minPath
 }
 
-// rearrange the heap
-func (h *Heap) rearrange(i int) {
-	smallest := i
-	left, right, size := leftChild(i), rightChild(i), len(h.elements)
-	if left < size && h.elements[left].value < h.elements[smallest].value {
-		smallest = left
-	}
-	if right < size && h.elements[right].value < h.elements[smallest].value {
-		smallest = right
-	}
-	if smallest != i {
-		h.swap(i, smallest)
-		h.rearrange(smallest)
-	}
+func newHeap() *heap {
+	return &heap{values: &minPath{}}
 }
 
-func (h *Heap) swap(i, j int) {
-	h.elements[i], h.elements[j] = h.elements[j], h.elements[i]
+func (h *heap) push(p path) {
+	hp.Push(h.values, p)
 }
 
-func parent(i int) int {
-	return (i - 1) / 2
-}
-
-func leftChild(i int) int {
-	return 2*i + 1
-}
-
-func rightChild(i int) int {
-	return 2*i + 2
+func (h *heap) pop() path {
+	i := hp.Pop(h.values)
+	return i.(path)
 }

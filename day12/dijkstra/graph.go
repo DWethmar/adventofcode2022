@@ -1,63 +1,54 @@
 package dijkstra
 
-import (
-	"math"
-	"sync"
-)
-
-type Node struct {
-	name    string
-	value   int
-	through *Node
-}
-
-type Edge struct {
-	node   *Node
+type edge struct {
+	node   string
 	weight int
 }
 
-type WeightedGraph struct {
-	Nodes []*Node
-	Edges map[string][]*Edge
-	mutex sync.RWMutex
+type Graph struct {
+	nodes map[string][]edge
 }
 
-func NewGraph() *WeightedGraph {
-	return &WeightedGraph{
-		Edges: make(map[string][]*Edge),
-	}
+func NewGraph() *Graph {
+	return &Graph{nodes: make(map[string][]edge)}
 }
 
-func (g *WeightedGraph) GetNode(name string) (node *Node) {
-	g.mutex.RLock()
-	defer g.mutex.RUnlock()
-	for _, n := range g.Nodes {
-		if n.name == name {
-			node = n
+func (g *Graph) AddEdge(origin, destiny string, weight int) {
+	g.nodes[origin] = append(g.nodes[origin], edge{node: destiny, weight: weight})
+	// g.nodes[destiny] = append(g.nodes[destiny], edge{node: origin, weight: weight})
+}
+
+func (g *Graph) edges(node string) []edge {
+	return g.nodes[node]
+}
+
+func (g *Graph) Path(origin, destiny string) (int, []string) {
+	h := newHeap()
+	h.push(path{value: 0, nodes: []string{origin}})
+	visited := make(map[string]bool)
+
+	for len(*h.values) > 0 {
+		// Find the nearest yet to visit node
+		p := h.pop()
+		node := p.nodes[len(p.nodes)-1]
+
+		if visited[node] {
+			continue
 		}
+
+		if node == destiny {
+			return p.value, p.nodes
+		}
+
+		for _, e := range g.edges(node) {
+			if !visited[e.node] {
+				// We calculate the total spent so far plus the cost and the path of getting here
+				h.push(path{value: p.value + e.weight, nodes: append([]string{}, append(p.nodes, e.node)...)})
+			}
+		}
+
+		visited[node] = true
 	}
-	return
-}
 
-func (g *WeightedGraph) AddNode(n *Node) {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-	g.Nodes = append(g.Nodes, n)
-}
-
-func AddNodes(graph *WeightedGraph, names ...string) (nodes map[string]*Node) {
-	nodes = make(map[string]*Node)
-	for _, name := range names {
-		n := &Node{name, math.MaxInt, nil}
-		graph.AddNode(n)
-		nodes[name] = n
-	}
-	return
-}
-
-func (g *WeightedGraph) AddEdge(n1, n2 *Node, weight int) {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-	g.Edges[n1.name] = append(g.Edges[n1.name], &Edge{n2, weight})
-	g.Edges[n2.name] = append(g.Edges[n2.name], &Edge{n1, weight})
+	return 0, nil
 }
