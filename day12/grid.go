@@ -23,7 +23,7 @@ func (g Grid) Iterate(f func(x, y int, r rune) iterate.Step) {
 }
 
 func CreateGrid(in io.Reader) (grid Grid, err error) {
-	i := 0
+	y := 0
 	err = iterate.Lines(in, func(s string) iterate.Step {
 		if grid == nil {
 			grid = make(Grid, 0)
@@ -31,11 +31,11 @@ func CreateGrid(in io.Reader) (grid Grid, err error) {
 
 		grid = append(grid, make([]rune, len(s)))
 
-		for j, r := range s {
-			grid[i][j] = r
+		for x, r := range s {
+			grid[y][x] = r
 		}
 
-		i++
+		y++
 
 		return iterate.Continue
 	})
@@ -46,15 +46,14 @@ func CreateGrid(in io.Reader) (grid Grid, err error) {
 func FindPoints(grid Grid, p ...rune) []*Point {
 	points := make([]*Point, 0)
 
-	for y, row := range grid {
-		for x, r := range row {
-			for _, c := range p {
-				if r == c {
-					points = append(points, &Point{x, y})
-				}
+	grid.Iterate(func(x, y int, r rune) iterate.Step {
+		for _, c := range p {
+			if r == c {
+				points = append(points, &Point{X: x, Y: y})
 			}
 		}
-	}
+		return iterate.Continue
+	})
 
 	return points
 }

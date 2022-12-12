@@ -7,14 +7,6 @@ import (
 	"github.com/dwethmar/adventofcode2022/day12/dijkstra"
 )
 
-var testGrid = Grid{
-	[]rune("Sabqponm"),
-	[]rune("abcryxxl"),
-	[]rune("accszExk"),
-	[]rune("acctuvwj"),
-	[]rune("abdefghi"),
-}
-
 func TestPoint_String(t *testing.T) {
 	type fields struct {
 		X int
@@ -53,7 +45,7 @@ func Test_main(t *testing.T) {
 	}
 }
 
-func Test_part1(t *testing.T) {
+func TestPart1(t *testing.T) {
 	type args struct {
 		grid  Grid
 		graph *dijkstra.Graph
@@ -62,36 +54,28 @@ func Test_part1(t *testing.T) {
 		name string
 		args args
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Part1",
+			args: args{
+				grid: testGrid,
+				graph: CreateGraph(testGrid, func(a, b int) bool {
+					// the elevation of the destination square can be at most one higher than the elevation of your current square
+					return a > b || a == b || a+1 == b
+				}),
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			part1(tt.args.grid, tt.args.graph)
-		})
-	}
-}
-
-func Test_part2(t *testing.T) {
-	type args struct {
-		grid  Grid
-		graph *dijkstra.Graph
-	}
-	tests := []struct {
-		name string
-		args args
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			part2(tt.args.grid, tt.args.graph)
+			Part1(tt.args.grid, tt.args.graph)
 		})
 	}
 }
 
 func TestMakeGraph(t *testing.T) {
 	type args struct {
-		grid Grid
+		grid   Grid
+		isEdge func(a, b int) bool
 	}
 	tests := []struct {
 		name string
@@ -102,44 +86,8 @@ func TestMakeGraph(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := MakeGraph(tt.args.grid); !reflect.DeepEqual(got, tt.want) {
+			if got := CreateGraph(tt.args.grid, tt.args.isEdge); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeGraph() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetPathToSignal(t *testing.T) {
-	type args struct {
-		graph *dijkstra.Graph
-		start *Point
-		end   *Point
-	}
-	tests := []struct {
-		name  string
-		args  args
-		want  int
-		want1 []string
-	}{
-		// {
-		// 	name: "test",
-		// 	args: args{
-		// 		graph: MakeGraph(testGrid),
-		// 		start: &Point{X: 0, Y: 0},
-		// 		end:   &Point{X: 5, Y: 2},
-		// 	},
-		// 	want:  31,
-		// 	want1: []string{},
-		// },
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := GetPathToSignal(tt.args.graph, tt.args.start, tt.args.end)
-			if got != tt.want {
-				t.Errorf("GetPathToSignal() got = %v, want %v", got, tt.want)
-			}
-			if !reflect.DeepEqual(got1, tt.want1) {
-				t.Errorf("GetPathToSignal() got1 = %v, want %v", got1, tt.want1)
 			}
 		})
 	}
@@ -147,8 +95,7 @@ func TestGetPathToSignal(t *testing.T) {
 
 func TestGetHeight(t *testing.T) {
 	type args struct {
-		grid Grid
-		p    *Point
+		r rune
 	}
 	tests := []struct {
 		name string
@@ -159,7 +106,7 @@ func TestGetHeight(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetHeight(tt.args.grid, tt.args.p); got != tt.want {
+			if got := GetHeight(tt.args.r); got != tt.want {
 				t.Errorf("GetHeight() = %v, want %v", got, tt.want)
 			}
 		})

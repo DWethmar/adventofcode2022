@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"strings"
 
@@ -26,58 +25,45 @@ func main() {
 		log.Fatal(err)
 	}
 
-	graph := MakeGraph(grid)
+	Part1(grid, CreateGraph(grid, func(a, b int) bool {
+		// the elevation of the destination square can be at most one higher than the elevation of your current square
+		return a >= b || a+1 == b
+	}))
 
-	part1(grid, graph)
-	part2(grid, graph)
+	Part2(grid, CreateGraph(grid, func(a, b int) bool {
+		return a <= b || a == b+1
+	}))
 }
 
-func part1(grid Grid, graph *dijkstra.Graph) {
-	points := FindPoints(grid, 'S', 'E')
-	if len(points) != 2 {
-		log.Fatal("Could not find start points")
+func Part1(grid Grid, graph *dijkstra.Graph) {
+	start := FindPoints(grid, 'S')[0]
+
+	length, path := graph.Path(start.String(), func(v interface{}) bool {
+		return v == 'E'
+	})
+
+	points := make([]*Point, len(path))
+	for i, p := range path {
+		s := number.GetAllIntsFromString(p)
+		points[i] = &Point{X: s[0], Y: s[1]}
 	}
 
-	length, _ := GetPathToSignal(graph, points[0], points[1])
+	PrintGrid(grid, points...)
 
 	fmt.Printf("Part 1: %d\n", length)
 }
 
-func part2(grid Grid, graph *dijkstra.Graph) {
-	startPoints := FindPoints(grid, 'S', 'a')
-	if len(startPoints) < 1 {
-		log.Fatal("Could not find start points")
-	}
+func Part2(grid Grid, graph *dijkstra.Graph) {
+	start := FindPoints(grid, 'E')[0]
 
-	fmt.Printf("Start points: %v \n", len(startPoints))
+	length, path := graph.Path(start.String(), func(v interface{}) bool {
+		return v == 'a' || v == 'S'
+	})
 
-	endPoints := FindPoints(grid, 'E')
-	if len(endPoints) != 1 {
-		log.Fatal("Could not find end points")
-	}
-
-	PrintGrid(grid, append(startPoints, endPoints[0])...)
-
-	var length = math.MaxInt32
-	var path []string
-
-	for _, start := range startPoints {
-		l, p := GetPathToSignal(graph, start, endPoints[0])
-
-		if len(p) > 0 && l < length {
-			length = l
-			path = p
-		}
-	}
-
-	points := make([]*Point, 0)
-
-	for _, p := range path {
-		c := number.GetAllIntsFromString(p)
-		points = append(points, &Point{
-			X: c[0],
-			Y: c[1],
-		})
+	points := make([]*Point, len(path))
+	for i, p := range path {
+		s := number.GetAllIntsFromString(p)
+		points[i] = &Point{X: s[0], Y: s[1]}
 	}
 
 	PrintGrid(grid, points...)
@@ -85,12 +71,21 @@ func part2(grid Grid, graph *dijkstra.Graph) {
 	fmt.Printf("Part 2: %d\n", length)
 }
 
-func MakeGraph(grid Grid) *dijkstra.Graph {
+func CreateGraph(grid Grid, isEdge func(a, b int) bool) *dijkstra.Graph {
 	graph := dijkstra.NewGraph()
 
-	grid.Iterate(func(x, y int, r rune) iterate.Step {
+	grid.Iterate(func(x, y int, v rune) iterate.Step {
+		c := &Point{X: x, Y: y}
+
+		graph.AddNode(c.String(), v)
+
+		return iterate.Continue
+	})
+
+	grid.Iterate(func(x, y int, v rune) iterate.Step {
 		c := &Point{x, y}
-		height := GetHeight(grid, c)
+
+		heightA := GetHeight(v)
 
 		// Add edges
 		for _, p := range GetNeighbors(grid, c) {
@@ -98,12 +93,11 @@ func MakeGraph(grid Grid) *dijkstra.Graph {
 				continue
 			}
 
-			// the elevation of the destination square can be at most one higher than the elevation of your current square
-			if h := GetHeight(grid, p); h > height+1 {
-				continue
-			}
+			heightB := GetHeight(grid.Get(p.X, p.Y))
 
-			graph.AddEdge(c.String(), p.String(), 1)
+			if isEdge(heightA, heightB) {
+				graph.AddEdge(c.String(), p.String(), 1)
+			}
 		}
 
 		return iterate.Continue
@@ -112,12 +106,7 @@ func MakeGraph(grid Grid) *dijkstra.Graph {
 	return graph
 }
 
-func GetPathToSignal(graph *dijkstra.Graph, start *Point, end *Point) (int, []string) {
-	return graph.Path(start.String(), end.String())
-}
-
-func GetHeight(grid Grid, p *Point) int {
-	r := grid.Get(p.X, p.Y)
+func GetHeight(r rune) int {
 	if r == 'S' { // Your current position (S) has elevation a.
 		return 0
 	} else if r == 'E' { // location that should get the best signal (E) has elevation z.
